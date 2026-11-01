@@ -1,0 +1,17 @@
+{
+  "name": "GiftGenie Lite",
+  "short_name": "GiftGenie",
+  "description": "AI-powered gift suggestions for Indian festivals and occasions.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FFF6E9",
+  "theme_color": "#FF7A45",
+  "orientation": "portrait",
+  "lang": "hi",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

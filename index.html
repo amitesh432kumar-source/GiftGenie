@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>GiftGenie</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#FF7A45">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
 <style>
 /* Layout: single-column wizard, friendly storybook vibe — bubbly cards, thick soft
    shadows instead of hairlines, a big round mascot, hand-drawn-feeling chips */
@@ -980,6 +984,15 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:24px}
     document.getElementById("langHi").addEventListener("click", function(){ setLang("hi"); });
     document.getElementById("langEn").addEventListener("click", function(){ setLang("en"); });
     document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+
+    // Registers the service worker so the site qualifies as an installable PWA
+    // (required for "Add to Home screen" / "Install app", and for packaging it
+    // as the GiftGenie Lite Android app). Silently no-ops if unsupported.
+    if("serviceWorker" in navigator){
+      window.addEventListener("load", function(){
+        navigator.serviceWorker.register("/sw.js").catch(function(){});
+      });
+    }
 
     var savedTheme = null;
     try{ savedTheme = localStorage.getItem(THEME_KEY); }catch(e){}
