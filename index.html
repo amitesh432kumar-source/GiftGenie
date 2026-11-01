@@ -1,0 +1,976 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>GiftGenie</title>
+<style>
+/* Layout: single-column wizard, friendly storybook vibe — bubbly cards, thick soft
+   shadows instead of hairlines, a big round mascot, hand-drawn-feeling chips */
+:root{
+  --bg:#FFF6E9;
+  --surface:#FFFFFF;
+  --ink:#3A2A1E;
+  --muted:#8F7A64;
+  --accent:#FF7A45;
+  --accent-ink:#FFFFFF;
+  --accent2:#2FA98C;
+  --gold:#F5A623;
+  --line:#F0E2CC;
+  --shadow:rgba(170,110,40,.16);
+  --radius:22px;
+  --font-display:'Baloo 2', 'Poppins', sans-serif;
+  --font-body:'Poppins', sans-serif;
+  --font-dev:'Hind', sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#241A12;
+    --surface:#30241A;
+    --ink:#FBEEDF;
+    --muted:#C3A98C;
+    --accent:#FF8F5E;
+    --accent-ink:#2A1408;
+    --accent2:#52C7A8;
+    --gold:#F7B84D;
+    --line:#43321F;
+    --shadow:rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#241A12;
+  --surface:#30241A;
+  --ink:#FBEEDF;
+  --muted:#C3A98C;
+  --accent:#FF8F5E;
+  --accent-ink:#2A1408;
+  --accent2:#52C7A8;
+  --gold:#F7B84D;
+  --line:#43321F;
+  --shadow:rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg)}
+body{
+  color:var(--ink);
+  font-family:var(--font-body);
+  background:
+    radial-gradient(circle at 10% 0%, color-mix(in srgb, var(--gold) 14%, transparent), transparent 40%),
+    radial-gradient(circle at 90% 20%, color-mix(in srgb, var(--accent2) 12%, transparent), transparent 45%),
+    var(--bg);
+  padding-left:max(16px, env(safe-area-inset-left,0px));
+  padding-right:max(16px, env(safe-area-inset-right,0px));
+}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0}
+.wrap{max-width:560px;margin:0 auto;padding-block:24px 48px}
+
+header.top{display:flex;flex-direction:column;gap:6px;margin-bottom:24px}
+.brand-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand .logo{flex:0 0 auto;width:52px;height:52px;filter:drop-shadow(0 4px 8px var(--shadow))}
+.brand h1{font-size:27px;color:var(--accent);white-space:nowrap}
+
+.langswitch{
+  flex:0 0 auto;display:inline-flex;border:none;border-radius:999px;
+  padding:4px;background:var(--surface);box-shadow:0 3px 10px var(--shadow);
+}
+.langswitch button{
+  font:inherit;font-size:12.5px;font-weight:700;border:none;background:none;color:var(--muted);
+  padding:7px 14px;border-radius:999px;cursor:pointer;
+}
+.langswitch button.active{background:var(--accent);color:var(--accent-ink)}
+.langswitch button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.tagline{
+  font-family:var(--font-dev);color:var(--ink);font-size:15px;font-weight:500;
+  background:var(--surface);display:inline-block;padding:9px 16px;border-radius:999px 999px 999px 4px;
+  box-shadow:0 3px 10px var(--shadow);margin-top:4px;width:fit-content;
+}
+
+.countdown{
+  margin-top:14px;background:linear-gradient(135deg, var(--accent), var(--gold));
+  border-radius:var(--radius);padding:16px 18px;box-shadow:0 8px 20px var(--shadow);
+}
+.countdown .fest{font-weight:700;font-size:14.5px;margin-bottom:10px;color:#fff}
+.timer{display:flex;gap:8px}
+.timer .tseg{
+  flex:1;min-width:0;background:rgba(255,255,255,.22);border-radius:14px;
+  padding:9px 4px;text-align:center;
+}
+.timer .tnum{
+  font-family:var(--font-display);font-size:20px;color:#fff;
+  font-variant-numeric:tabular-nums;line-height:1.1;
+}
+.timer .tlbl{font-size:10px;color:rgba(255,255,255,.85);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+
+.card{
+  background:var(--surface);border:none;border-radius:var(--radius);
+  padding:22px;margin-bottom:18px;box-shadow:0 6px 18px var(--shadow);
+}
+.step-label{
+  font-size:13px;letter-spacing:.02em;color:var(--ink);
+  font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:9px;
+}
+.step-label .num{
+  width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--accent-ink);
+  display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
+  box-shadow:0 3px 6px var(--shadow);flex:0 0 auto;
+}
+
+.subhead{font-size:12.5px;font-weight:700;color:var(--accent2);letter-spacing:.02em;margin-bottom:9px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:360px){.grid{grid-template-columns:repeat(2,1fr)}}
+.opt{
+  border:2.5px solid transparent;background:var(--bg);border-radius:18px;
+  padding:13px 8px;display:flex;flex-direction:column;align-items:center;gap:7px;
+  cursor:pointer;font:inherit;color:var(--ink);min-width:0;
+  transition:transform .12s, border-color .12s, background .12s;
+}
+.opt .ic{font-size:24px}
+.opt .lbl{font-size:12.5px;font-weight:500;text-align:center;line-height:1.25}
+.opt:hover{transform:translateY(-2px)}
+.opt.sel{
+  border-color:var(--accent);background:color-mix(in srgb, var(--accent) 14%, var(--surface));
+  transform:translateY(-2px);
+}
+.opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.row-opts{display:flex;flex-wrap:wrap;gap:9px}
+.chip{
+  border:2px solid transparent;background:var(--bg);border-radius:999px;
+  padding:10px 17px;font:inherit;font-size:13.5px;font-weight:500;color:var(--ink);cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;transition:transform .12s, background .12s, border-color .12s;
+}
+.chip:hover{transform:translateY(-1px)}
+.chip.sel{border-color:var(--accent);background:var(--accent);color:var(--accent-ink);transform:translateY(-1px)}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.disabled{opacity:.4;pointer-events:none}
+
+.cta{
+  width:100%;border:none;border-radius:999px;padding:16px;font:inherit;font-weight:700;
+  font-size:16px;background:linear-gradient(135deg, var(--accent), var(--gold));color:#fff;
+  cursor:pointer;margin-top:6px;box-shadow:0 8px 18px var(--shadow);
+  transition:transform .12s;
+}
+.cta:active{transform:scale(.98)}
+.cta:disabled{opacity:.4;cursor:default;box-shadow:none}
+
+.results{margin-top:20px}
+.results h2{font-size:20px;margin-bottom:4px}
+.results .sub{font-family:var(--font-dev);color:var(--muted);font-size:13.5px;margin-bottom:16px}
+
+.loadingRow{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13.5px;padding:14px 4px}
+.spinner{
+  width:18px;height:18px;border-radius:50%;flex:0 0 auto;
+  border:3px solid var(--line);border-top-color:var(--accent);
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.spinner{animation-duration:1.4s}}
+
+.aibadge{
+  display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;
+  color:var(--accent2);background:color-mix(in srgb, var(--accent2) 14%, var(--surface));
+  padding:3px 9px;border-radius:999px;margin-bottom:6px;
+}
+
+.gift{
+  background:var(--surface);border:none;border-radius:20px;
+  padding:17px;display:flex;gap:13px;margin-bottom:13px;box-shadow:0 6px 16px var(--shadow);
+}
+.gift .emoji{
+  font-size:26px;flex:0 0 auto;width:46px;height:46px;border-radius:50%;
+  background:color-mix(in srgb, var(--gold) 20%, var(--surface));
+  display:flex;align-items:center;justify-content:center;
+}
+.gift .info{min-width:0}
+.gift .name{font-weight:700;font-size:15px;margin-bottom:3px}
+.gift .desc{color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:9px}
+.gift .meta{display:flex;gap:7px;flex-wrap:wrap}
+.tag{
+  font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;
+  background:color-mix(in srgb, var(--accent2) 18%, var(--surface));color:var(--accent2);
+}
+.buylinks{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.buylinks a{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  font-size:13px;font-weight:700;padding:11px 14px;border-radius:12px;text-decoration:none;
+  border:1.5px solid var(--line);background:none;transition:transform .1s;
+}
+.buylinks a:active{transform:scale(.98)}
+.buylinks a:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.buylinks a .bicon{font-size:14px}
+.buylinks a.amazon{color:#B8690A;border-color:#FF9900}
+.buylinks a.flipkart{color:#2874F0;border-color:#2874F0}
+.buylinks a.meesho{color:#B6177A;border-color:#E6177A}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .buylinks a.amazon{color:#FFB84D}
+  :root:not([data-theme="light"]) .buylinks a.flipkart{color:#7AA7FF}
+  :root:not([data-theme="light"]) .buylinks a.meesho{color:#F08AC0}
+}
+:root[data-theme="dark"] .buylinks a.amazon{color:#FFB84D}
+:root[data-theme="dark"] .buylinks a.flipkart{color:#7AA7FF}
+:root[data-theme="dark"] .buylinks a.meesho{color:#F08AC0}
+
+.viewmore{
+  width:100%;border:2.5px dashed var(--accent);border-radius:999px;padding:14px;
+  font:inherit;font-weight:700;font-size:14px;background:none;color:var(--accent);
+  cursor:pointer;margin-bottom:8px;transition:transform .12s;
+}
+.viewmore:active{transform:scale(.98)}
+.viewmore:disabled{opacity:.4;cursor:default;border-style:solid}
+
+.again{
+  display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:var(--accent2);
+  font:inherit;font-weight:700;font-size:13.5px;padding:10px 0;cursor:pointer;
+}
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:24px}
+
+.scrollfab{
+  position:fixed;
+  right:max(16px, env(safe-area-inset-right,0px));
+  bottom:max(16px, env(safe-area-inset-bottom,0px));
+  width:48px;height:48px;border-radius:50%;border:none;
+  background:linear-gradient(135deg, var(--accent), var(--gold));color:#fff;font-size:19px;
+  box-shadow:0 6px 16px var(--shadow);cursor:pointer;z-index:20;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .2s, transform .12s;
+}
+.scrollfab.show{opacity:1;pointer-events:auto}
+.scrollfab:active{transform:scale(.92)}
+.scrollfab:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Poppins:wght@400;500;600;700&family=Hind:wght@400;500&display=swap">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand-row">
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="lampG" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#E0B04E"/>
+              <stop offset="1" stop-color="#B8862E"/>
+            </linearGradient>
+            <linearGradient id="genieG" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0" stop-color="#E8713F" stop-opacity=".9"/>
+              <stop offset="1" stop-color="#E8713F" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M20 46 Q16 40 24 38 Q20 32 30 32 Q34 24 44 28 Q52 30 50 38 Q58 40 54 46 Q58 50 52 52 L20 52 Q14 50 20 46 Z" fill="url(#lampG)"/>
+          <rect x="30" y="24" width="5" height="6" rx="1.5" fill="url(#lampG)"/>
+          <ellipse cx="32" cy="52" rx="20" ry="3" fill="#000" opacity=".08"/>
+          <path d="M31 24 C27 16 33 8 31 2 C40 7 38 16 32 22 C37 16 42 18 40 12 C46 16 44 24 36 26 Z" fill="url(#genieG)"/>
+        </svg>
+        <h1>GiftGenie</h1>
+      </div>
+      <div class="langswitch" role="group" aria-label="Language">
+        <button type="button" id="langHi" class="active">हिं</button>
+        <button type="button" id="langEn">EN</button>
+      </div>
+    </div>
+    <div class="tagline" id="tTagline">हर त्योहार, हर रिश्ता, एक सही तोहफ़ा।</div>
+    <div class="countdown">
+      <div class="fest" id="festName">…</div>
+      <div class="timer">
+        <div class="tseg"><div class="tnum" id="tD">00</div><div class="tlbl" id="lD">दिन</div></div>
+        <div class="tseg"><div class="tnum" id="tH">00</div><div class="tlbl" id="lH">घंटे</div></div>
+        <div class="tseg"><div class="tnum" id="tM">00</div><div class="tlbl" id="lM">मिनट</div></div>
+        <div class="tseg"><div class="tnum" id="tS">00</div><div class="tlbl" id="lS">सेकंड</div></div>
+      </div>
+    </div>
+  </header>
+
+  <section class="card" id="occasionCard">
+    <div class="step-label"><span class="num">1</span><span id="tStep1">मौका चुनें</span></div>
+    <div class="subhead" id="tFestivals">त्योहार</div>
+    <div class="grid" id="occasionGrid"></div>
+    <div class="subhead" id="tPersonal" style="margin-top:14px">निजी मौक़े</div>
+    <div class="grid" id="personalGrid"></div>
+  </section>
+
+  <section class="card disabled" id="recipientCard">
+    <div class="step-label"><span class="num">2</span><span id="tStep2">किसके लिए है?</span></div>
+    <div class="row-opts" id="relationGrid"></div>
+    <div class="row-opts" id="ageGrid" style="margin-top:10px"></div>
+  </section>
+
+  <section class="card disabled" id="budgetCard">
+    <div class="step-label"><span class="num">3</span><span id="tStep3">बजट</span></div>
+    <div class="row-opts" id="budgetGrid"></div>
+  </section>
+
+  <button class="cta" id="findBtn" disabled>सुझाव दिखाएँ</button>
+
+  <div class="results" id="resultsBox" hidden>
+    <h2 id="resultsTitle"></h2>
+    <div class="sub" id="resultsSub"></div>
+    <div id="giftList"></div>
+    <button class="viewmore" id="viewMoreBtn"></button>
+    <button class="again" id="againBtn">↺ <span id="tAgain">फिर से चुनें</span></button>
+  </div>
+
+  <footer id="tFooter">GiftGenie — हर भारतीय त्योहार के लिए</footer>
+</div>
+
+<button class="scrollfab" id="scrollFab" type="button" aria-label="Scroll">⌄</button>
+
+<script>
+(function(){
+  "use strict";
+
+  var lang = "hi"; // "hi" | "en"
+
+  var STR = {
+    tagline: {hi:"हर त्योहार, हर रिश्ता, एक सही तोहफ़ा।", en:"Every festival, every relation, the right gift."},
+    step1: {hi:"मौका चुनें", en:"Choose the occasion"},
+    step2: {hi:"किसके लिए है?", en:"Who is it for?"},
+    step3: {hi:"बजट", en:"Budget"},
+    find: {hi:"सुझाव दिखाएँ", en:"Show suggestions"},
+    again: {hi:"फिर से चुनें", en:"Start over"},
+    footer: {hi:"GiftGenie — हर भारतीय त्योहार के लिए", en:"GiftGenie — for every Indian festival"},
+    days:{hi:"दिन",en:"Days"}, hours:{hi:"घंटे",en:"Hrs"}, mins:{hi:"मिनट",en:"Min"}, secs:{hi:"सेकंड",en:"Sec"},
+    nextFest:{hi:"अगला त्योहार",en:"Next festival"},
+    resultsFor:{hi:"के लिए सुझाव",en:"suggestions"},
+    viewAmazon:{hi:"Amazon पर देखें",en:"View on Amazon"},
+    viewFlipkart:{hi:"Flipkart पर देखें",en:"View on Flipkart"},
+    viewMeesho:{hi:"Meesho पर देखें",en:"View on Meesho"},
+    viewMore:{hi:"+ और सुझाव देखें",en:"+ View more suggestions"},
+    noMore:{hi:"इस मौक़े के लिए बस इतने ही सुझाव हैं",en:"That's all the suggestions for this occasion"},
+    pickedFor:{hi:"बजट के हिसाब से चुने गए",en:"Picked to match your budget"},
+    festivals:{hi:"त्योहार",en:"Festivals"},
+    personal:{hi:"निजी मौक़े",en:"Personal occasions"},
+    aiThinking:{hi:"AI सुझाव ढूँढ रहा है…",en:"AI is finding suggestions…"},
+    aiBadge:{hi:"✨ AI सुझाव",en:"✨ AI suggestion"},
+    curatedBadge:{hi:"चुना हुआ सुझाव",en:"Curated pick"}
+  };
+
+  function t(key){ return STR[key][lang]; }
+
+  // Festival metadata (one tile per festival in the grid, independent of the year).
+  var FESTIVALS = [
+    {id:"dhanteras", ic:"🪙", hi:"धनतेरस", en:"Dhanteras"},
+    {id:"diwali", ic:"🪔", hi:"दिवाली", en:"Diwali"},
+    {id:"bhaidooj", ic:"👫", hi:"भाई दूज", en:"Bhai Dooj"},
+    {id:"christmas", ic:"🎄", hi:"क्रिसमस", en:"Christmas"},
+    {id:"newyear", ic:"🎉", hi:"नया साल", en:"New Year"},
+    {id:"makarsankranti", ic:"🪁", hi:"मकर संक्रांति", en:"Makar Sankranti"},
+    {id:"holi", ic:"🎨", hi:"होली", en:"Holi"},
+    {id:"independenceday", ic:"🇮🇳", hi:"स्वतंत्रता दिवस", en:"Independence Day"},
+    {id:"rakhi", ic:"🎗️", hi:"रक्षाबंधन", en:"Raksha Bandhan"},
+    {id:"ganeshchaturthi", ic:"🐘", hi:"गणेश चतुर्थी", en:"Ganesh Chaturthi"},
+    {id:"navratri", ic:"🪔", hi:"नवरात्रि / दशहरा", en:"Navratri / Dussehra"},
+    {id:"karvachauth", ic:"🌙", hi:"करवा चौथ", en:"Karva Chauth"},
+    {id:"chhath", ic:"🌅", hi:"छठ पूजा", en:"Chhath Puja"},
+    {id:"republicday", ic:"🪖", hi:"गणतंत्र दिवस", en:"Republic Day"}
+  ];
+  var FEST_BY_ID = {};
+  FESTIVALS.forEach(function(f){ FEST_BY_ID[f.id] = f; });
+
+  // Real panchang-sourced dates through 2030 for every festival that moves each year
+  // (Gregorian-fixed ones — New Year, Makar Sankranti, Republic Day, Christmas — are
+  // generated below instead). Each occurrence is {y,m,d}; the nearest future one wins,
+  // and past ones simply drop out of the running as today's date moves forward.
+  var FEST_DATES = {
+    dhanteras: [[2026,11,6],[2027,10,27],[2028,10,15],[2029,11,4],[2030,10,24]],
+    diwali:    [[2026,11,8],[2027,10,29],[2028,10,17],[2029,11,5],[2030,10,26]],
+    bhaidooj:  [[2026,11,11],[2027,10,31],[2028,10,19],[2029,11,7],[2030,10,28]],
+    holi:      [[2026,3,3],[2027,3,22],[2028,3,11],[2029,3,1],[2030,3,20]],
+    rakhi:     [[2026,8,27],[2027,8,17],[2028,8,5],[2029,8,23],[2030,8,13]],
+    ganeshchaturthi: [[2026,9,14],[2027,9,4],[2028,8,23],[2029,9,12],[2030,9,1]],
+    navratri:  [[2026,10,20],[2027,10,9],[2028,9,27],[2029,10,16],[2030,10,6]],
+    karvachauth: [[2026,10,29],[2027,10,18],[2028,10,7],[2029,10,26],[2030,10,15]],
+    chhath:    [[2026,11,16],[2027,11,5],[2028,10,24],[2029,11,11],[2030,11,1]]
+  };
+  // Fixed Gregorian-date festivals: generate 2026–2031 automatically.
+  [["newyear",1,1],["makarsankranti",1,14],["republicday",1,26],["independenceday",8,15],["christmas",12,25]].forEach(function(f){
+    var id=f[0], m=f[1], d=f[2], arr=[];
+    for(var y=2026; y<=2031; y++) arr.push([y,m,d]);
+    FEST_DATES[id] = arr;
+  });
+
+  var PERSONAL = [
+    {id:"birthday", ic:"🎂", hi:"जन्मदिन", en:"Birthday"},
+    {id:"anniversary", ic:"💍", hi:"सालगिरह", en:"Anniversary"},
+    {id:"wedding", ic:"💐", hi:"शादी", en:"Wedding"},
+    {id:"housewarming", ic:"🏠", hi:"गृहप्रवेश", en:"Housewarming"}
+  ];
+
+  var OCCASIONS = FESTIVALS.concat(PERSONAL);
+
+  // Scans every dated occurrence of every festival (through 2030/31), keeps only the
+  // ones still in the future relative to right now, and returns the single nearest one.
+  // This is why the countdown moves to the next festival in real time as today's date
+  // advances, and why a festival that has passed simply stops appearing here.
+  function nextFestival(){
+    var now = new Date();
+    var best = null, bestDiff = Infinity, bestId = null;
+    Object.keys(FEST_DATES).forEach(function(id){
+      FEST_DATES[id].forEach(function(dt){
+        var cand = new Date(dt[0], dt[1]-1, dt[2], 0,0,0,0);
+        var diff = cand - now;
+        if(diff >= 0 && diff < bestDiff){ bestDiff = diff; best = cand; bestId = id; }
+      });
+    });
+    return {fest: bestId ? FEST_BY_ID[bestId] : null, diff:bestDiff};
+  }
+
+  // Festival grid shows only festivals whose nearest upcoming occurrence still falls
+  // within the current calendar year, in date order (nearest first). A festival that
+  // already passed this year, or whose next date is next year (e.g. Holi in autumn),
+  // drops out — the moment the calendar rolls into January, that year's own festivals
+  // (in their own correct order) take its place automatically, re-computed on load.
+  function thisYearFestivals(){
+    var now = new Date();
+    var thisYear = now.getFullYear();
+    var items = [];
+    Object.keys(FEST_DATES).forEach(function(id){
+      var bestCand = null, bestDiff = Infinity;
+      FEST_DATES[id].forEach(function(dt){
+        var cand = new Date(dt[0], dt[1]-1, dt[2], 0,0,0,0);
+        var diff = cand - now;
+        if(diff >= 0 && diff < bestDiff){ bestDiff = diff; bestCand = cand; }
+      });
+      if(bestCand && bestCand.getFullYear() === thisYear){
+        items.push({info: FEST_BY_ID[id], date: bestCand});
+      }
+    });
+    items.sort(function(a,b){ return a.date - b.date; });
+    return items.map(function(it){ return it.info; });
+  }
+
+  var RELATIONS = [
+    {id:"mother", ic:"👩", hi:"माँ", en:"Mother"}, {id:"father", ic:"👨", hi:"पिता", en:"Father"},
+    {id:"sibling", ic:"👫", hi:"भाई-बहन", en:"Sibling"}, {id:"partner", ic:"💑", hi:"जीवनसाथी", en:"Partner"},
+    {id:"friend", ic:"🧑‍🤝‍🧑", hi:"दोस्त", en:"Friend"}, {id:"colleague", ic:"💼", hi:"सहकर्मी", en:"Colleague"},
+    {id:"child", ic:"🧒", hi:"बच्चा", en:"Child"}, {id:"grandparent", ic:"👴", hi:"दादा-दादी", en:"Grandparent"}
+  ];
+  var AGES = [
+    {id:"kid", ic:"🧸", hi:"बच्चा (0-12)", en:"Kid (0-12)"}, {id:"teen", ic:"🎧", hi:"किशोर (13-19)", en:"Teen (13-19)"},
+    {id:"adult", ic:"🧑", hi:"युवा (20-45)", en:"Adult (20-45)"}, {id:"senior", ic:"🧓", hi:"वरिष्ठ (45+)", en:"Senior (45+)"}
+  ];
+  var BUDGETS = [
+    {id:"b1", ic:"🌱", hi:"₹500 तक", en:"Up to ₹500"}, {id:"b2", ic:"🌿", hi:"₹500–1500", en:"₹500–1500"},
+    {id:"b3", ic:"🌳", hi:"₹1500–5000", en:"₹1500–5000"}, {id:"b4", ic:"✨", hi:"₹5000+", en:"₹5000+"}
+  ];
+
+  var BANK = {
+    diwali:[
+      {e:"🪔",hi:["हाथ से बनी पीतल की दीया सेट","पारंपरिक नक्काशी वाले 5 दीयों का सेट, घर की पूजा के लिए।",["पारंपरिक","होम डेकोर"]],en:["Handcrafted brass diya set","A set of 5 engraved diyas for home puja.",["Traditional","Home decor"]],tier:1},
+      {e:"🍬",hi:["प्रीमियम मिठाई और ड्राई फ्रूट्स हैम्पर","काजू कतली, बादाम और मेवों का सजावटी बॉक्स।",["मिठाई","हैम्पर"]],en:["Premium sweets & dry-fruit hamper","Kaju katli, almonds and nuts in a decorative box.",["Sweets","Hamper"]],tier:2},
+      {e:"🕯️",hi:["सुगंधित मोमबत्ती और डिफ्यूज़र सेट","चंदन-गुलाब की खुशबू वाला आरामदायक गिफ्ट सेट।",["वेलनेस"]],en:["Scented candle & diffuser set","Sandalwood-rose fragrance, calming gift set.",["Wellness"]],tier:2},
+      {e:"💍",hi:["सिल्वर ज्वेलरी पीस","हल्के डिज़ाइन की चांदी की बाली या पायल।",["ज्वेलरी","प्रीमियम"]],en:["Silver jewellery piece","Lightweight silver earrings or anklet.",["Jewellery","Premium"]],tier:3},
+      {e:"📱",hi:["स्मार्ट गैजेट (ईयरबड्स/स्मार्टवॉच)","रोज़मर्रा इस्तेमाल के लिए टेक गिफ्ट।",["टेक","प्रीमियम"]],en:["Smart gadget (earbuds/watch)","A tech gift for everyday use.",["Tech","Premium"]],tier:4},
+      {e:"🧧",hi:["गोल्ड कॉइन या सेविंग्स गिफ्ट कार्ड","शुभ शुरुआत के लिए, बड़ों को पसंद आता है।",["शुभ","बड़ों के लिए"]],en:["Gold coin or savings gift card","An auspicious gift elders appreciate.",["Auspicious","For elders"]],tier:4}
+    ],
+    rakhi:[
+      {e:"🎗️",hi:["डिज़ाइनर राखी सेट","हाथ से बनी राखियों का सुंदर सेट, मिठाई के साथ।",["पारंपरिक"]],en:["Designer rakhi set","A handcrafted rakhi set with sweets.",["Traditional"]],tier:1},
+      {e:"⌚",hi:["स्टाइलिश रिस्टबैंड या घड़ी","भाई के रोज़ के इस्तेमाल के लिए।",["एक्सेसरी"]],en:["Stylish wristband or watch","For everyday wear.",["Accessory"]],tier:2},
+      {e:"👜",hi:["वॉलेट या बैकपैक","बढ़िया फिनिश वाला लेदर एक्सेसरी।",["एक्सेसरी","प्रीमियम"]],en:["Wallet or backpack","A fine-finish leather accessory.",["Accessory","Premium"]],tier:3},
+      {e:"🎧",hi:["ब्लूटूथ ईयरबड्स","म्यूज़िक और कॉल्स के लिए बढ़िया गैजेट।",["टेक"]],en:["Bluetooth earbuds","A great gadget for music and calls.",["Tech"]],tier:3}
+    ],
+    bhaidooj:[
+      {e:"🍫",hi:["चॉकलेट और मिठाई हैम्पर","तिलक की थाली के साथ मीठा उपहार।",["मिठाई"]],en:["Chocolate & sweets hamper","A sweet gift to go with the tilak thali.",["Sweets"]],tier:1},
+      {e:"🧣",hi:["स्टोल या शॉल","बहन के लिए गर्मजोशी भरा तोहफ़ा।",["पारंपरिक"]],en:["Stole or shawl","A warm gift for a sister.",["Traditional"]],tier:2},
+      {e:"💄",hi:["ब्यूटी/स्किनकेयर गिफ्ट सेट","प्रीमियम ब्रांड का केयर किट।",["ब्यूटी"]],en:["Beauty/skincare gift set","A premium-brand care kit.",["Beauty"]],tier:3}
+    ],
+    birthday:[
+      {e:"🎈",hi:["पर्सनलाइज़्ड फोटो मग/फ्रेम","यादों के साथ बना कस्टम गिफ्ट।",["पर्सनलाइज़्ड"]],en:["Personalised photo mug/frame","A custom gift made from memories.",["Personalised"]],tier:1},
+      {e:"🍰",hi:["कस्टम केक और फ्लावर कॉम्बो","पसंदीदा फ्लेवर के साथ सरप्राइज़।",["सेलिब्रेशन"]],en:["Custom cake & flower combo","A surprise in their favourite flavour.",["Celebration"]],tier:2},
+      {e:"🎮",hi:["गेमिंग एक्सेसरी / हेडसेट","युवाओं के लिए मज़ेदार टेक गिफ्ट।",["टेक"]],en:["Gaming accessory / headset","A fun tech gift for the young.",["Tech"]],tier:3},
+      {e:"✈️",hi:["शॉर्ट ट्रिप या एक्सपीरियंस वाउचर","स्पा, एडवेंचर या वीकेंड गेटअवे।",["एक्सपीरियंस","प्रीमियम"]],en:["Short trip or experience voucher","Spa, adventure or weekend getaway.",["Experience","Premium"]],tier:4}
+    ],
+    anniversary:[
+      {e:"🌹",hi:["फ्रेश फ्लावर बुके और कार्ड","दिल से लिखा नोट, ताज़े फूलों के साथ।",["रोमांटिक"]],en:["Fresh flower bouquet & card","A heartfelt note with fresh flowers.",["Romantic"]],tier:1},
+      {e:"🖼️",hi:["कपल फोटो फ्रेम / एलबम","सालों की यादें एक जगह।",["पर्सनलाइज़्ड"]],en:["Couple photo frame / album","Years of memories in one place.",["Personalised"]],tier:2},
+      {e:"💎",hi:["मैचिंग ज्वेलरी सेट","दोनों के लिए हल्के डिज़ाइन की ज्वेलरी।",["ज्वेलरी","प्रीमियम"]],en:["Matching jewellery set","Lightweight jewellery for both.",["Jewellery","Premium"]],tier:3},
+      {e:"🏨",hi:["रोमांटिक डिनर या स्टेकेशन","खास शाम के लिए बुकिंग गिफ्ट।",["एक्सपीरियंस","प्रीमियम"]],en:["Romantic dinner or staycation","A booking gift for a special evening.",["Experience","Premium"]],tier:4}
+    ],
+    wedding:[
+      {e:"🍽️",hi:["डाइनिंग या किचन सेट","नए घर के लिए उपयोगी बर्तन सेट।",["घरेलू"]],en:["Dining or kitchen set","Useful cookware for a new home.",["Home"]],tier:2},
+      {e:"🛏️",hi:["प्रीमियम बेडशीट सेट","आरामदायक और सुंदर डिज़ाइन।",["घरेलू"]],en:["Premium bedsheet set","Comfortable, beautifully designed.",["Home"]],tier:2},
+      {e:"💰",hi:["शगुन लिफाफा / गिफ्ट कार्ड","पारंपरिक नकद उपहार, शुभ रंग के लिफाफे में।",["शुभ"]],en:["Shagun envelope / gift card","Traditional cash gift in an auspicious envelope.",["Auspicious"]],tier:3},
+      {e:"🏺",hi:["डेकोरेटिव होम सेट","नए घर को सजाने के लिए शोपीस।",["होम डेकोर","प्रीमियम"]],en:["Decorative home set","Showpieces to style a new home.",["Home decor","Premium"]],tier:4}
+    ],
+    holi:[
+      {e:"🎨",hi:["ऑर्गेनिक गुलाल और पिचकारी सेट","स्किन-फ्रेंडली रंगों का सेट, बच्चों के लिए पिचकारी।",["पारंपरिक"]],en:["Organic gulal & pichkari set","Skin-friendly colours with a water gun for kids.",["Traditional"]],tier:1},
+      {e:"🧴",hi:["स्किन केयर आफ्टर-होली किट","रंग हटाने वाला सॉफ्ट केयर सेट।",["वेलनेस"]],en:["After-Holi skin care kit","A gentle care set to remove colour.",["Wellness"]],tier:2}
+    ],
+    newyear:[
+      {e:"📓",hi:["प्रीमियम डायरी और पेन सेट","नए साल के संकल्पों के लिए स्टाइलिश सेट।",["स्टेशनरी"]],en:["Premium diary & pen set","A stylish set for new year resolutions.",["Stationery"]],tier:1},
+      {e:"🕯️",hi:["सेलिब्रेशन हैम्पर","चॉकलेट, कैंडल और ग्रीटिंग कार्ड का कॉम्बो।",["हैम्पर"]],en:["Celebration hamper","Chocolate, candle and greeting card combo.",["Hamper"]],tier:2}
+    ],
+    housewarming:[
+      {e:"🪴",hi:["इनडोर पौधा सेट","सुंदर गमले में सजावटी पौधे।",["होम डेकोर"]],en:["Indoor plant set","Decorative plants in a lovely pot.",["Home decor"]],tier:1},
+      {e:"🕰️",hi:["वॉल क्लॉक या शोपीस","घर को सजाने वाला डेकोर आइटम।",["होम डेकोर"]],en:["Wall clock or showpiece","A decor piece to style the home.",["Home decor"]],tier:2}
+    ],
+    dhanteras:[
+      {e:"🪙",hi:["चांदी का सिक्का या बर्तन","शुभ खरीद के लिए पारंपरिक सिल्वर गिफ्ट।",["शुभ","पारंपरिक"]],en:["Silver coin or vessel","A traditional auspicious-purchase gift.",["Auspicious","Traditional"]],tier:2},
+      {e:"🍯",hi:["कुकवेयर या किचन गिफ्ट सेट","धनतेरस पर नई चीज़ ख़रीदना शुभ माना जाता है।",["घरेलू"]],en:["Cookware or kitchen gift set","Buying something new on Dhanteras is considered auspicious.",["Home"]],tier:2},
+      {e:"💰",hi:["गोल्ड कॉइन","निवेश के साथ शुभकामनाएँ।",["शुभ","प्रीमियम"]],en:["Gold coin","Good fortune with a small investment.",["Auspicious","Premium"]],tier:4}
+    ],
+    christmas:[
+      {e:"🎄",hi:["क्रिसमस हैम्पर","केक, कुकीज़ और चॉकलेट का फेस्टिव बॉक्स।",["हैम्पर"]],en:["Christmas hamper","A festive box of cake, cookies and chocolate.",["Hamper"]],tier:1},
+      {e:"🧦",hi:["पर्सनलाइज़्ड स्टॉकिंग गिफ्ट","नाम के साथ सजा हुआ छोटा तोहफ़ा सेट।",["पर्सनलाइज़्ड"]],en:["Personalised stocking gift","A small named gift set.",["Personalised"]],tier:2},
+      {e:"🎁",hi:["स्वेटर या विंटर एक्सेसरी","ठंड के मौसम के लिए आरामदायक गिफ्ट।",["फैशन"]],en:["Sweater or winter accessory","A cosy gift for the cold season.",["Fashion"]],tier:3}
+    ],
+    makarsankranti:[
+      {e:"🪁",hi:["पतंग और मांझा सेट","त्योहार की मस्ती के लिए रंग-बिरंगी पतंगें।",["पारंपरिक"]],en:["Kite and string set","Colourful kites for the festival fun.",["Traditional"]],tier:1},
+      {e:"🥜",hi:["तिल-गुड़ स्वीट हैम्पर","पारंपरिक तिलगुड़ और रेवड़ी का डिब्बा।",["मिठाई"]],en:["Til-gud sweet hamper","A traditional box of sesame-jaggery sweets.",["Sweets"]],tier:1}
+    ],
+    republicday:[
+      {e:"🇮🇳",hi:["तिरंगा थीम गिफ्ट सेट","देशभक्ति थीम वाला मग या एक्सेसरी सेट।",["थीम गिफ्ट"]],en:["Tricolour-theme gift set","A patriotic-theme mug or accessory set.",["Themed"]],tier:1},
+      {e:"📚",hi:["किताब या डायरी गिफ्ट","इतिहास या प्रेरणादायक किताब का तोहफ़ा।",["बुक्स"]],en:["Book or diary gift","A history or inspirational book as a gift.",["Books"]],tier:2}
+    ],
+    ganeshchaturthi:[
+      {e:"🐘",hi:["इको-फ्रेंडली गणेश मूर्ति","मिट्टी से बनी पर्यावरण-अनुकूल मूर्ति।",["पारंपरिक"]],en:["Eco-friendly Ganesh idol","A clay idol that's kind to the environment.",["Traditional"]],tier:2},
+      {e:"🍬",hi:["मोदक गिफ्ट बॉक्स","पारंपरिक मोदक और लड्डू का डिब्बा।",["मिठाई"]],en:["Modak gift box","A box of traditional modak and laddoo.",["Sweets"]],tier:1}
+    ],
+    navratri:[
+      {e:"🪔",hi:["गरबा/डांडिया एक्सेसरी सेट","रंगीन दुपट्टा और ज्वेलरी सेट।",["फैशन"]],en:["Garba/Dandiya accessory set","A colourful dupatta and jewellery set.",["Fashion"]],tier:2},
+      {e:"🎊",hi:["फेस्टिव हैम्पर","मिठाई और पूजा सामग्री का सेट।",["हैम्पर"]],en:["Festive hamper","A set of sweets and puja essentials.",["Hamper"]],tier:1}
+    ],
+    karvachauth:[
+      {e:"🌙",hi:["सरगी थाली सेट","सजी हुई सरगी की टोकरी, मिठाई और फलों के साथ।",["पारंपरिक"]],en:["Sargi thali set","A decorated sargi basket with sweets and fruit.",["Traditional"]],tier:1},
+      {e:"🎀",hi:["चूड़ी और मेहंदी सेट","पूजा के लिए सुंदर चूड़ियाँ और मेहंदी कोन।",["पारंपरिक"]],en:["Bangles & mehndi set","Pretty bangles and mehndi cones for the puja.",["Traditional"]],tier:1},
+      {e:"💃",hi:["साड़ी या सूट पीस","करवा चौथ के लिए ख़ास पारंपरिक परिधान।",["फैशन","प्रीमियम"]],en:["Saree or suit piece","A special traditional outfit for the day.",["Fashion","Premium"]],tier:3}
+    ],
+    chhath:[
+      {e:"🌅",hi:["पूजा की टोकरी (दौरा)","सूप, फल और पूजा सामग्री से सजी पारंपरिक टोकरी।",["पारंपरिक"]],en:["Puja basket (daura)","A traditional basket arranged with soop, fruit and puja items.",["Traditional"]],tier:2},
+      {e:"🍊",hi:["ताज़े फल और सूप सेट","छठ पूजा के लिए ताज़े मौसमी फलों का सेट।",["पारंपरिक"]],en:["Fresh fruit & soop set","A set of fresh seasonal fruit for Chhath puja.",["Traditional"]],tier:1},
+      {e:"🥮",hi:["ठेकुआ गिफ्ट बॉक्स","हाथ से बना पारंपरिक ठेकुआ, प्रसाद के लिए।",["मिठाई"]],en:["Thekua gift box","Handmade traditional thekua as prasad.",["Sweets"]],tier:1}
+    ]
+  };
+
+  var state = {occasion:null, relation:null, age:null, budget:null};
+  var countdownTimer = null;
+
+  function el(tag, cls, html){
+    var e = document.createElement(tag);
+    if(cls) e.className = cls;
+    if(html!==undefined) e.innerHTML = html;
+    return e;
+  }
+
+  function clearOccasionSelection(){
+    ["occasionGrid","personalGrid"].forEach(function(id){
+      var c = document.getElementById(id);
+      Array.prototype.forEach.call(c.children, function(ch){ ch.classList.remove("sel"); });
+    });
+  }
+
+  function buildOccasionGrid(container, items){
+    container.innerHTML = "";
+    items.forEach(function(it){
+      var b = el("button", "opt" + (state.occasion===it.id ? " sel":""));
+      b.setAttribute("type","button");
+      b.innerHTML = '<span class="ic">'+(it.ic||"")+'</span><span class="lbl">'+it[lang]+'</span>';
+      b.addEventListener("click", function(){
+        clearOccasionSelection();
+        b.classList.add("sel");
+        state.occasion = it.id;
+        onStateChange();
+      });
+      container.appendChild(b);
+    });
+  }
+
+  function buildChipRow(container, items, type){
+    container.innerHTML = "";
+    items.forEach(function(it){
+      var b = el("button", "chip" + (state[type]===it.id ? " sel":""));
+      b.innerHTML = (it.ic ? '<span>'+it.ic+'</span>' : '') + '<span>'+it[lang]+'</span>';
+      b.setAttribute("type","button");
+      b.addEventListener("click", function(){
+        Array.prototype.forEach.call(container.children, function(c){c.classList.remove("sel")});
+        b.classList.add("sel");
+        state[type] = it.id;
+        onStateChange();
+      });
+      container.appendChild(b);
+    });
+  }
+
+  function onStateChange(){
+    var recipientCard = document.getElementById("recipientCard");
+    var budgetCard = document.getElementById("budgetCard");
+    var findBtn = document.getElementById("findBtn");
+    if(state.occasion) recipientCard.classList.remove("disabled");
+    if(state.relation && state.age) budgetCard.classList.remove("disabled");
+    findBtn.disabled = !(state.occasion && state.relation && state.age && state.budget);
+  }
+
+  function budgetTier(id){ return {b1:1,b2:2,b3:3,b4:4}[id] || 2; }
+
+  // Full curated pool for the chosen occasion, sorted by closeness to the chosen budget
+  // tier. Used as the always-available fallback, and as the very first batch shown
+  // instantly while the AI call is still in flight.
+  function sortedPool(){
+    var pool = BANK[state.occasion] || [];
+    var tier = budgetTier(state.budget);
+    var scored = pool.map(function(g){return {g:g, dist: Math.abs(g.tier - tier)}});
+    scored.sort(function(a,b){return a.dist - b.dist});
+    return scored.map(function(s){return s.g});
+  }
+
+  // Normalises a curated BANK entry into the same {name,desc,tags,emoji} shape the
+  // AI backend returns, so both sources render through one card renderer.
+  function curatedToCard(g){
+    var d = g[lang];
+    return {emoji:g.e, name:d[0], desc:d[1], tags:d[2]||[], source:"curated"};
+  }
+
+  function giftCardEl(card){
+    var tagsHtml = (card.tags||[]).map(function(tag){return '<span class="tag">'+tag+'</span>'}).join("");
+    var q = encodeURIComponent(card.name);
+    var amazonUrl = "https://www.amazon.in/s?k=" + q;
+    var flipkartUrl = "https://www.flipkart.com/search?q=" + q;
+    var meeshoUrl = "https://www.meesho.com/search?q=" + q;
+    var badge = card.source === "ai"
+      ? '<div class="aibadge">'+t("aiBadge")+'</div>'
+      : '';
+    var wrap = el("div","gift");
+    wrap.innerHTML =
+      '<div class="emoji">'+(card.emoji||"🎁")+'</div>'+
+      '<div class="info">'+
+        badge+
+        '<div class="name">'+card.name+'</div>'+
+        '<div class="desc">'+card.desc+'</div>'+
+        '<div class="meta">'+tagsHtml+'</div>'+
+        '<div class="buylinks">'+
+          '<a class="amazon" href="'+amazonUrl+'" target="_blank" rel="noopener"><span class="bicon">🛒</span>'+t("viewAmazon")+'</a>'+
+          '<a class="flipkart" href="'+flipkartUrl+'" target="_blank" rel="noopener"><span class="bicon">🛍️</span>'+t("viewFlipkart")+'</a>'+
+          '<a class="meesho" href="'+meeshoUrl+'" target="_blank" rel="noopener"><span class="bicon">🛒</span>'+t("viewMeesho")+'</a>'+
+        '</div>'+
+      '</div>';
+    return wrap;
+  }
+
+  // resultState tracks what's on screen so "view more" knows what to exclude (when
+  // asking the AI for fresh ideas) and the curated pool knows where it left off.
+  var resultState = {curatedPool:[], curatedShown:0, batch:4, shownNames:[], aiAvailable:true};
+
+  // Cross-session "already shown" memory: names the AI (or the curated bank) has ever
+  // suggested to this visitor, persisted in localStorage so picking the exact same
+  // occasion/relation/budget again — even after "Start over" or a page reload — never
+  // repeats a gift that already appeared. Capped so the exclude list sent to the AI
+  // doesn't grow without bound.
+  var SEEN_KEY = "giftgenie_seen_names";
+  function normName(n){
+    return String(n||"").toLowerCase().trim().replace(/[^\p{L}\p{N}]+/gu, "");
+  }
+  function loadSeenNames(){
+    try{
+      var arr = JSON.parse(localStorage.getItem(SEEN_KEY) || "[]");
+      return Array.isArray(arr) ? arr : [];
+    }catch(e){ return []; }
+  }
+  var seenNames = loadSeenNames();
+  var seenNormSet = {};
+  seenNames.forEach(function(n){ seenNormSet[normName(n)] = true; });
+  function markSeen(name){
+    if(!name || seenNormSet[normName(name)]) return;
+    seenNormSet[normName(name)] = true;
+    seenNames.push(name);
+    if(seenNames.length > 80) seenNames = seenNames.slice(-80);
+    try{ localStorage.setItem(SEEN_KEY, JSON.stringify(seenNames)); }catch(e){}
+  }
+  function dedupeAgainstSeen(cards){
+    var batchNorm = {};
+    return cards.filter(function(c){
+      var k = normName(c.name);
+      if(seenNormSet[k] || batchNorm[k]) return false;
+      batchNorm[k] = true;
+      return true;
+    });
+  }
+
+  function updateViewMoreBtn(disabledReason){
+    var btn = document.getElementById("viewMoreBtn");
+    btn.textContent = disabledReason || t("viewMore");
+    btn.disabled = !!disabledReason;
+  }
+
+  function occasionLabel(){
+    var occ = OCCASIONS.filter(function(o){return o.id===state.occasion})[0];
+    return occ ? occ[lang] : "";
+  }
+  function relationLabel(){
+    var r = RELATIONS.filter(function(x){return x.id===state.relation})[0];
+    return r ? r[lang] : "";
+  }
+  function ageLabel(){
+    var a = AGES.filter(function(x){return x.id===state.age})[0];
+    return a ? a[lang] : "";
+  }
+  function budgetLabel(){
+    var b = BUDGETS.filter(function(x){return x.id===state.budget})[0];
+    return b ? b[lang] : "";
+  }
+
+  // Calls the Groq-backed /api/suggest function for fresh, non-repeating ideas. Returns
+  // an array of card objects, or null on any failure (network, missing key, bad JSON) —
+  // callers fall back to the curated bank silently on null, so a not-yet-configured
+  // backend never breaks the page.
+  function fetchAISuggestions(excludeNames, count){
+    var payload = {
+      occasion: occasionLabel(),
+      relation: relationLabel(),
+      age: ageLabel(),
+      budget: budgetLabel(),
+      lang: lang,
+      exclude: excludeNames || [],
+      count: count || 4
+    };
+    return fetch("/api/suggest", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
+    }).then(function(res){
+      if(!res.ok) throw new Error("bad status");
+      return res.json();
+    }).then(function(data){
+      if(!data || !Array.isArray(data.suggestions)) throw new Error("bad shape");
+      return data.suggestions.map(function(s){
+        return {
+          emoji: s.emoji || "🎁",
+          name: String(s.name||"").slice(0,120),
+          desc: String(s.desc||"").slice(0,220),
+          tags: Array.isArray(s.tags) ? s.tags.slice(0,3) : [],
+          source: "ai"
+        };
+      }).filter(function(c){ return c.name; });
+    }).catch(function(){ return null; });
+  }
+
+  function appendCards(cards){
+    var list = document.getElementById("giftList");
+    cards.forEach(function(c){
+      list.appendChild(giftCardEl(c));
+      resultState.shownNames.push(c.name);
+      markSeen(c.name); // remembered across the whole visit, not just this result set
+    });
+  }
+
+  // Asks the AI for `count` fresh suggestions, excluding every name ever shown to this
+  // visitor (seenNames), then strips out anything that still slipped through as a
+  // duplicate (by normalised name, case/whitespace-insensitive) or repeated within the
+  // same batch. If that leaves fewer than requested, asks once more for just the
+  // shortfall with the newly-seen names added to the exclude list, then returns
+  // whatever was collected (never more than `count`).
+  function fetchAISuggestionsDeduped(count){
+    var exclude = seenNames.slice(-40);
+    return fetchAISuggestions(exclude, count).then(function(cards){
+      if(!cards) return null;
+      var unique = dedupeAgainstSeen(cards);
+      if(unique.length >= count) return unique.slice(0, count);
+      var need = count - unique.length;
+      var retryExclude = exclude.concat(cards.map(function(c){ return c.name; })).slice(-40);
+      return fetchAISuggestions(retryExclude, need).then(function(cards2){
+        if(!cards2 || !cards2.length) return unique.length ? unique : null;
+        var unique2 = dedupeAgainstSeen(unique.concat(cards2)).slice(unique.length);
+        return unique.concat(unique2).slice(0, count);
+      });
+    });
+  }
+
+  function appendCuratedBatch(){
+    var next = resultState.curatedPool.slice(resultState.curatedShown, resultState.curatedShown + resultState.batch);
+    resultState.curatedShown += next.length;
+    appendCards(next.map(curatedToCard));
+    return next.length;
+  }
+
+  function appendMore(){
+    var btn = document.getElementById("viewMoreBtn");
+    btn.disabled = true;
+    var list = document.getElementById("giftList");
+    var loadingRow = el("div","loadingRow");
+    loadingRow.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>'+t("aiThinking")+'</span>';
+    list.appendChild(loadingRow);
+
+    var ask = resultState.aiAvailable ? fetchAISuggestionsDeduped(4) : Promise.resolve(null);
+    ask.then(function(aiCards){
+      loadingRow.remove();
+      if(aiCards && aiCards.length){
+        appendCards(aiCards);
+      } else {
+        resultState.aiAvailable = false; // stop retrying the API this session once it fails
+        var got = appendCuratedBatch();
+        if(got === 0){ updateViewMoreBtn(t("noMore")); return; }
+      }
+      updateViewMoreBtn();
+    });
+  }
+
+  function renderResults(){
+    var box = document.getElementById("resultsBox");
+    var list = document.getElementById("giftList");
+    list.innerHTML = "";
+    document.getElementById("resultsTitle").textContent = occasionLabel() + " " + t("resultsFor");
+    document.getElementById("resultsSub").textContent = t("pickedFor");
+
+    resultState = {curatedPool: sortedPool(), curatedShown:0, batch:4, shownNames:[], aiAvailable:true};
+
+    box.hidden = false;
+    document.getElementById("occasionCard").hidden = true;
+    document.getElementById("recipientCard").hidden = true;
+    document.getElementById("budgetCard").hidden = true;
+    document.getElementById("findBtn").hidden = true;
+    box.scrollIntoView({behavior:"smooth", block:"start"});
+
+    // Ask the AI first, as soon as "Show suggestions" is pressed, so the very first
+    // batch the visitor sees is AI-generated. The curated bank is only a fallback
+    // for when Groq can't be reached, so the page is never left empty.
+    var viewMoreBtn = document.getElementById("viewMoreBtn");
+    viewMoreBtn.disabled = true;
+    viewMoreBtn.textContent = t("viewMore");
+    var loadingRow = el("div", "loadingRow");
+    loadingRow.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>' + t("aiThinking") + '</span>';
+    list.appendChild(loadingRow);
+    fetchAISuggestionsDeduped(4).then(function(aiCards){
+      loadingRow.remove();
+      if(aiCards && aiCards.length){
+        appendCards(aiCards);
+      } else {
+        resultState.aiAvailable = false;
+        appendCuratedBatch();
+      }
+      updateViewMoreBtn();
+    });
+  }
+
+  function resetAll(){
+    state = {occasion:null, relation:null, age:null, budget:null};
+    document.getElementById("resultsBox").hidden = true;
+    document.getElementById("occasionCard").hidden = false;
+    document.getElementById("recipientCard").hidden = false;
+    document.getElementById("budgetCard").hidden = false;
+    document.getElementById("findBtn").hidden = false;
+    document.getElementById("findBtn").disabled = true;
+    document.getElementById("recipientCard").classList.add("disabled");
+    document.getElementById("budgetCard").classList.add("disabled");
+    rebuildOptions();
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
+
+  function pad(n){ return String(n).padStart(2,"0"); }
+
+  function tickCountdown(){
+    try{
+      var res = nextFestival();
+      var best = res.fest, bestDiff = res.diff;
+      if(best){
+        document.getElementById("festName").textContent = t("nextFest") + ": " + best[lang];
+        var totalSec = Math.max(0, Math.floor(bestDiff/1000));
+        var d = Math.floor(totalSec/86400);
+        var h = Math.floor((totalSec%86400)/3600);
+        var m = Math.floor((totalSec%3600)/60);
+        var s = totalSec%60;
+        document.getElementById("tD").textContent = pad(d);
+        document.getElementById("tH").textContent = pad(h);
+        document.getElementById("tM").textContent = pad(m);
+        document.getElementById("tS").textContent = pad(s);
+      }
+    }catch(e){}
+  }
+
+  function applyLangStrings(){
+    document.getElementById("tTagline").textContent = t("tagline");
+    document.getElementById("tStep1").textContent = t("step1");
+    document.getElementById("tStep2").textContent = t("step2");
+    document.getElementById("tStep3").textContent = t("step3");
+    document.getElementById("findBtn").textContent = t("find");
+    document.getElementById("tAgain").textContent = t("again");
+    document.getElementById("tFooter").textContent = t("footer");
+    document.getElementById("lD").textContent = t("days");
+    document.getElementById("lH").textContent = t("hours");
+    document.getElementById("lM").textContent = t("mins");
+    document.getElementById("lS").textContent = t("secs");
+    document.getElementById("tFestivals").textContent = t("festivals");
+    document.getElementById("tPersonal").textContent = t("personal");
+    if(!document.getElementById("resultsBox").hidden) updateViewMoreBtn();
+    document.getElementById("langHi").classList.toggle("active", lang==="hi");
+    document.getElementById("langEn").classList.toggle("active", lang==="en");
+  }
+
+  function rebuildOptions(){
+    buildOccasionGrid(document.getElementById("occasionGrid"), thisYearFestivals());
+    buildOccasionGrid(document.getElementById("personalGrid"), PERSONAL);
+    buildChipRow(document.getElementById("relationGrid"), RELATIONS, "relation");
+    buildChipRow(document.getElementById("ageGrid"), AGES, "age");
+    buildChipRow(document.getElementById("budgetGrid"), BUDGETS, "budget");
+  }
+
+  function setLang(l){
+    lang = l;
+    applyLangStrings();
+    rebuildOptions();
+    tickCountdown();
+    try{ localStorage.setItem("giftgenie_lang", l); }catch(e){}
+  }
+
+  function init(){
+    try{
+      var saved = localStorage.getItem("giftgenie_lang");
+      if(saved === "en" || saved === "hi") lang = saved;
+    }catch(e){}
+
+    applyLangStrings();
+    rebuildOptions();
+    document.getElementById("findBtn").addEventListener("click", renderResults);
+    document.getElementById("againBtn").addEventListener("click", resetAll);
+    document.getElementById("viewMoreBtn").addEventListener("click", appendMore);
+    document.getElementById("langHi").addEventListener("click", function(){ setLang("hi"); });
+    document.getElementById("langEn").addEventListener("click", function(){ setLang("en"); });
+
+    initScrollFab();
+
+    tickCountdown();
+    countdownTimer = setInterval(tickCountdown, 1000);
+  }
+
+  // Floating round button: shows only once there's enough page to scroll, points down
+  // to jump toward the suggestions/bottom, flips to point up to jump back to top once
+  // the visitor has scrolled past roughly one screen.
+  function initScrollFab(){
+    var fab = document.getElementById("scrollFab");
+    function update(){
+      var scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      if(scrollable < 120){ fab.classList.remove("show"); return; }
+      fab.classList.add("show");
+      if(window.scrollY > window.innerHeight * 0.6){
+        fab.textContent = "⌃";
+        fab.setAttribute("aria-label","Scroll to top");
+      } else {
+        fab.textContent = "⌄";
+        fab.setAttribute("aria-label","Scroll down");
+      }
+    }
+    fab.addEventListener("click", function(){
+      if(window.scrollY > window.innerHeight * 0.6){
+        window.scrollTo({top:0, behavior:"smooth"});
+      } else {
+        window.scrollTo({top: document.documentElement.scrollHeight, behavior:"smooth"});
+      }
+    });
+    window.addEventListener("scroll", update, {passive:true});
+    window.addEventListener("resize", update);
+    update();
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
