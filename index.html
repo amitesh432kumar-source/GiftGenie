@@ -85,6 +85,15 @@ header.top{display:flex;flex-direction:column;gap:6px;margin-bottom:24px}
 .langswitch button.active{background:var(--accent);color:var(--accent-ink)}
 .langswitch button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
+.themeToggle{
+  flex:0 0 auto;width:36px;height:36px;border-radius:50%;border:none;
+  background:var(--surface);box-shadow:0 3px 10px var(--shadow);
+  font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:var(--ink);transition:transform .12s;
+}
+.themeToggle:active{transform:scale(.9)}
+.themeToggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
 .tagline{
   font-family:var(--font-dev);color:var(--ink);font-size:15px;font-weight:500;
   background:var(--surface);display:inline-block;padding:9px 16px;border-radius:999px 999px 999px 4px;
@@ -270,9 +279,12 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:24px}
         </svg>
         <h1>GiftGenie</h1>
       </div>
-      <div class="langswitch" role="group" aria-label="Language">
-        <button type="button" id="langHi" class="active">हिं</button>
-        <button type="button" id="langEn">EN</button>
+      <div style="display:flex;align-items:center;gap:8px;flex:0 0 auto">
+        <button type="button" class="themeToggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
+        <div class="langswitch" role="group" aria-label="Language">
+          <button type="button" id="langHi" class="active">हिं</button>
+          <button type="button" id="langEn">EN</button>
+        </div>
       </div>
     </div>
     <div class="tagline" id="tTagline">हर त्योहार, हर रिश्ता, एक सही तोहफ़ा।</div>
@@ -898,6 +910,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:24px}
     if(!document.getElementById("resultsBox").hidden) updateViewMoreBtn();
     document.getElementById("langHi").classList.toggle("active", lang==="hi");
     document.getElementById("langEn").classList.toggle("active", lang==="en");
+    updateThemeToggleBtn();
   }
 
   function rebuildOptions(){
@@ -916,6 +929,43 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:24px}
     try{ localStorage.setItem("giftgenie_lang", l); }catch(e){}
   }
 
+  // Theme: "light" and "dark" force that look regardless of the device setting; no
+  // stored preference means "follow the device" (handled by the existing @media rule
+  // in the CSS, which only kicks in when data-theme isn't explicitly set to "light").
+  var THEME_KEY = "giftgenie_theme";
+  function systemPrefersDark(){
+    return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  }
+  function isDarkNow(){
+    var explicit = document.documentElement.getAttribute("data-theme");
+    if(explicit === "dark") return true;
+    if(explicit === "light") return false;
+    return systemPrefersDark();
+  }
+  function updateThemeToggleBtn(){
+    var btn = document.getElementById("themeToggle");
+    if(!btn) return;
+    var dark = isDarkNow();
+    btn.textContent = dark ? "☀️" : "🌙";
+    var label = dark
+      ? (lang === "en" ? "Switch to light mode" : "लाइट मोड पर जाएँ")
+      : (lang === "en" ? "Switch to dark mode" : "डार्क मोड पर जाएँ");
+    btn.setAttribute("aria-label", label);
+  }
+  function applyTheme(theme){
+    if(theme === "light" || theme === "dark"){
+      document.documentElement.setAttribute("data-theme", theme);
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+    }
+    updateThemeToggleBtn();
+  }
+  function toggleTheme(){
+    var next = isDarkNow() ? "light" : "dark";
+    try{ localStorage.setItem(THEME_KEY, next); }catch(e){}
+    applyTheme(next);
+  }
+
   function init(){
     try{
       var saved = localStorage.getItem("giftgenie_lang");
@@ -929,6 +979,11 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:24px}
     document.getElementById("viewMoreBtn").addEventListener("click", appendMore);
     document.getElementById("langHi").addEventListener("click", function(){ setLang("hi"); });
     document.getElementById("langEn").addEventListener("click", function(){ setLang("en"); });
+    document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+
+    var savedTheme = null;
+    try{ savedTheme = localStorage.getItem(THEME_KEY); }catch(e){}
+    applyTheme(savedTheme);
 
     initScrollFab();
 
