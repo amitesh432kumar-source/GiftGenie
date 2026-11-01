@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>GiftGenie</title>
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#FF7A45">
-<link rel="icon" href="/icons/icon-192.png">
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <style>
 /* Layout: single-column wizard, friendly storybook vibe — bubbly cards, thick soft
    shadows instead of hairlines, a big round mascot, hand-drawn-feeling chips */
@@ -990,7 +990,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:24px}
     // as the GiftGenie Lite Android app). Silently no-ops if unsupported.
     if("serviceWorker" in navigator){
       window.addEventListener("load", function(){
-        navigator.serviceWorker.register("/sw.js").catch(function(){});
+        navigator.serviceWorker.register("sw.js").catch(function(){});
       });
     }
 

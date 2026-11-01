@@ -4,7 +4,7 @@
 // if the network fails, so the Groq-backed /api/suggest calls are never served
 // stale, while the shell still loads offline after the first visit.
 var CACHE = "giftgenie-v1";
-var SHELL = ["/", "/index.html", "/manifest.json"];
+var SHELL = ["./", "./index.html", "./manifest.json"];
 
 self.addEventListener("install", function(event){
   self.skipWaiting();
